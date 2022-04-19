@@ -12,9 +12,9 @@ Updated on 2019-07-03 by hbldh <henrik.blidh@gmail.com>
 import sys
 import asyncio
 import platform
+import time
 
 from bleak import BleakClient
-
 
 # you can change these to match your device or override them from the command line
 CHARACTERISTIC_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
@@ -30,10 +30,17 @@ def notification_handler(sender, data):
     print("{0}: {1}".format(sender, data))
 
 
+async def services(address, client):
+    svcs = await client.get_services()
+    print("Services:")
+    for service in svcs:
+        print(service)
+
+
 async def main(address, char_uuid):
     async with BleakClient(address) as client:
         print(f"Connected: {client.is_connected}")
-
+        await services(ADDRESS, client)
         await client.start_notify(char_uuid, notification_handler)
         await asyncio.sleep(5.0)
         await client.stop_notify(char_uuid)
