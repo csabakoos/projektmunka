@@ -17,11 +17,11 @@ from bleak import BleakClient
 
 
 # you can change these to match your device or override them from the command line
-CHARACTERISTIC_UUID = "f000aa65-0451-4000-b000-000000000000"
+CHARACTERISTIC_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 ADDRESS = (
-    "24:71:89:cc:09:05"
+    "30:C6:F7:2F:27:32"
     if platform.system() != "Darwin"
-    else "B9EA5233-37EF-4DD6-87A8-2A875E821C46"
+    else "1016407A-D89D-907C-F7C3-0C6B31A3B400"
 )
 
 
