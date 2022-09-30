@@ -1,12 +1,14 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#include "headers.h"
+
 // MPU6050 Slave Device Address
 const uint8_t MPU6050SlaveAddress = 0x68;
 
 // Select SDA and SCL pins for I2C communication
-const uint8_t scl = 5;
-const uint8_t sda = 17;
+const uint8_t scl = MPU_LEFT_5_SCL;
+const uint8_t sda = MPU_LEFT_5_SDA;
 
 // sensitivity scale factor respective to full scale setting provided in datasheet
 const uint16_t AccelScaleFactor = 16384;
@@ -86,15 +88,6 @@ void loop()
   Gx = (double)GyroX / GyroScaleFactor;
   Gy = (double)GyroY / GyroScaleFactor;
   Gz = (double)GyroZ / GyroScaleFactor;
-
-  /*
-  Serial.print("Ax: "); Serial.print(Ax);
-  Serial.print(" Ay: "); Serial.print(Ay);
-  Serial.print(" Az: "); Serial.print(Az);
-  Serial.print(" Gx: "); Serial.print(Gx);
-  Serial.print(" Gy: "); Serial.print(Gy);
-  Serial.print(" Gz: "); Serial.println(Gz);
-  */
 
   Serial.print(Ax);
   Serial.print(","); Serial.print(Ay);
