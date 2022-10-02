@@ -15,10 +15,10 @@
     (From the 1st which is the thumb all the way to 5th that is the pinky!)
 */
 #if SYSTEM == LEFT
-    #define MPU_1_SCL 5
-    #define MPU_1_SDA 17
-    #define MPU_2_SCL 3
-    #define MPU_2_SDA 21
+    #define MPU_1_SCL 19
+    #define MPU_1_SDA 18
+    #define MPU_2_SCL 17
+    #define MPU_2_SDA 16
     #define MPU_3_SCL 32
     #define MPU_3_SDA 33
     #define MPU_4_SCL 25

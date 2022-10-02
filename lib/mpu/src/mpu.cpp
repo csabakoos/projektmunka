@@ -29,10 +29,6 @@ private:
   const uint8_t MPU6050_REGISTER_ACCEL_XOUT_H = 0x3B;
   const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET = 0x68;
 
-  // Variables for the SDA and SCL pins used during the I2C communication
-  uint8_t scl;
-  uint8_t sda;
-
   // The variables that will contain the sensory data.
   int16_t AccelX;
   int16_t AccelY;
@@ -60,7 +56,6 @@ private:
   */
   void initSensor()
   {
-    Serial.println("Sensor init begin!");
     Wire.begin(scl, sda);
     delay(150); // Making sure the I2C connection has been initiated...
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
@@ -73,7 +68,6 @@ private:
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_INT_ENABLE, 0x01);
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_USER_CTRL, 0x00);
-    Serial.println("Sensor initiated!");
   }
 
   /*
@@ -83,15 +77,19 @@ private:
   */
   void getReadableValues()
   {
-    Ax = (double)AccelX / AccelScaleFactor;
-    Ay = (double)AccelY / AccelScaleFactor;
-    Az = (double)AccelZ / AccelScaleFactor;
-    Gx = (double)GyroX / GyroScaleFactor;
-    Gy = (double)GyroY / GyroScaleFactor;
-    Gz = (double)GyroZ / GyroScaleFactor;
+    this->Ax = (double)AccelX / AccelScaleFactor;
+    this->Ay = (double)AccelY / AccelScaleFactor;
+    this->Az = (double)AccelZ / AccelScaleFactor;
+    this->Gx = (double)GyroX / GyroScaleFactor;
+    this->Gy = (double)GyroY / GyroScaleFactor;
+    this->Gz = (double)GyroZ / GyroScaleFactor;
   }
 
 public:
+  // Variables for the SDA and SCL pins used during the I2C communication
+  uint8_t scl;
+  uint8_t sda;
+
   // The public variables with the readable sensory data.
   double Ax;
   double Ay;
@@ -140,5 +138,27 @@ public:
   void printData()
   {
     Serial.printf("%d,%d,%d,%d,%d,%d,", Ax, Ay, Az, Gx, Gy, Gz);
+  }
+
+  /*
+    This method returns the raw readings as formatted comma separated values.
+    It is needed so that later we can easily get the data for the model training.
+  */
+  void printRawData()
+  {
+    Serial.printf("%d,%d,%d,%d,%d,%d,", AccelX, AccelY, AccelZ, GyroX, GyroY, GyroZ);
+  }
+
+  /*
+    This method represents the end of a series of sensory data collection.
+    In reality all it does is to write a line break to the serial connection
+    so that new data will begin in a new clean line.
+
+    It is important so that we can extract data precisely from the serial monitor.
+    (Also later on it will be used to determine when a sign has come to an end.)
+  */
+  static void endOfData()
+  {
+    Serial.println();
   }
 };
