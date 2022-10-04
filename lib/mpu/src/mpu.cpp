@@ -1,20 +1,25 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <SimpleKalmanFilter.h>
 
 /*
-  This class represents a single MPU-6050 multi-axis sensor.
+  This class represents a single MPU-6050 multi-aXis sensor.
   These are used in single pattern on the individual fingers of a glove.
   Using this class we are able to extract the necessary sensory data.
 */
 class mpu
 {
 private:
+  // The simplified Kalman filters for our acceleration meter and gyroscope needs.
+  SimpleKalmanFilter *accelKalman;
+  SimpleKalmanFilter *gyroKalman;
+
   // The sensor's I2C slave device address.
   const uint8_t MPU6050SlaveAddress = 0x68;
 
   // Sensitivity scale factor respective to full scale setting provided in datasheet.
-  const uint16_t AccelScaleFactor = 16384;
-  const uint16_t GyroScaleFactor = 131;
+  const uint16_t accelScaleFactor = 16384;
+  const uint16_t gyroScaleFactor = 131;
 
   // Few configuration register addresses. (More on them in the datasheet!)
   const uint8_t MPU6050_REGISTER_SMPLRT_DIV = 0x19;
@@ -67,21 +72,29 @@ public:
   uint8_t scl;
   uint8_t sda;
 
-  // The public variables with the readable sensory data.
-  double Ax;
-  double Ay;
-  double Az;
-  double Gx;
-  double Gy;
-  double Gz;
+  // The variables with the readable sensory data.
+  double aX;
+  double aY;
+  double aZ;
+  double gX;
+  double gY;
+  double gZ;
+
+  // The Kalman variables with the readable sensory data.
+  float kaX;
+  float kaY;
+  float kaZ;
+  float kgX;
+  float kgY;
+  float kgZ;
 
   // The variables that will contain the sensory data.
-  int16_t AccelX;
-  int16_t AccelY;
-  int16_t AccelZ;
-  int16_t GyroX;
-  int16_t GyroY;
-  int16_t GyroZ;
+  int16_t accelX;
+  int16_t accelY;
+  int16_t accelZ;
+  int16_t gyroX;
+  int16_t gyroY;
+  int16_t gyroZ;
 
   /*
     The MPU-6050's constructor that is used to initiate I2C communication for the sensor.
@@ -89,6 +102,8 @@ public:
   */
   mpu(uint8_t _scl, uint8_t _sda)
   {
+    accelKalman = new SimpleKalmanFilter(1, 1, 0.1);
+    gyroKalman = new SimpleKalmanFilter(1, 1, 0.1);
     scl = _scl;
     sda = _sda;
     initSensor();
@@ -96,7 +111,7 @@ public:
 
   /*
     This method gets the raw values from the sensor.
-    In it's sensory data variables - Accel & Gyro - will have the raw readings from the sensors corresponding registers.
+    In it's sensory data variables - accel & gyro - will have the raw readings from the sensors corresponding registers.
     (It however will still need further formating in order to have a usable and readable sensory data!)
   */
   void getValues()
@@ -108,12 +123,28 @@ public:
     Wire.requestFrom(MPU6050SlaveAddress, (uint8_t)14);
 
     // Reading the raw sensory data into the respective variables.
-    AccelX = (((int16_t)Wire.read() << 8) | Wire.read());
-    AccelY = (((int16_t)Wire.read() << 8) | Wire.read());
-    AccelZ = (((int16_t)Wire.read() << 8) | Wire.read());
-    GyroX = (((int16_t)Wire.read() << 16) | Wire.read());
-    GyroY = (((int16_t)Wire.read() << 8) | Wire.read());
-    GyroZ = (((int16_t)Wire.read() << 8) | Wire.read());
+    accelX = (((int16_t)Wire.read() << 8) | Wire.read());
+    accelY = (((int16_t)Wire.read() << 8) | Wire.read());
+    accelZ = (((int16_t)Wire.read() << 8) | Wire.read());
+    gyroX = (((int16_t)Wire.read() << 16) | Wire.read());
+    gyroY = (((int16_t)Wire.read() << 8) | Wire.read());
+    gyroZ = (((int16_t)Wire.read() << 8) | Wire.read());
+
+    // Setting the scaled sensory data based on the readings and the previously set scaler values.
+    aX = (double)accelX / accelScaleFactor;
+    aY = (double)accelY / accelScaleFactor;
+    aZ = (double)accelZ / accelScaleFactor;
+    gX = (double)gyroX / gyroScaleFactor;
+    gY = (double)gyroY / gyroScaleFactor;
+    gZ = (double)gyroZ / gyroScaleFactor;
+
+    // Setting the estimated values.
+    kaX = accelKalman->updateEstimate((float)accelX);
+    kaY = accelKalman->updateEstimate((float)accelY);
+    kaZ = accelKalman->updateEstimate((float)accelZ);
+    kgX = gyroKalman->updateEstimate((float)gyroX);
+    kgY = gyroKalman->updateEstimate((float)gyroY);
+    kgZ = gyroKalman->updateEstimate((float)gyroZ);
   }
 
   /*
@@ -122,9 +153,9 @@ public:
 
     (Note that right now this one is not used because of the planned Kalman filter implementation!)
   */
-  void printData()
+  void printScaledData()
   {
-    Serial.printf("%d,%d,%d,%d,%d,%d,", Ax, Ay, Az, Gx, Gy, Gz);
+    Serial.printf("%d,%d,%d,%d,%d,%d,", aX, aY, aZ, gX, gY, gZ);
   }
 
   /*
@@ -133,7 +164,17 @@ public:
   */
   void printRawData()
   {
-    Serial.printf("%d,%d,%d,%d,%d,%d,", AccelX, AccelY, AccelZ, GyroX, GyroY, GyroZ);
+    Serial.printf("%d,%d,%d,%d,%d,%d,", accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+  }
+
+  /*
+    This method prints the measued sensory data run through a Kalman filter.
+    It is important since this waY we get a clear stream of sensory data that
+    can be used to group and identify exact signs for the model later or.
+  */
+  void printKalmanData()
+  {
+    Serial.printf("%d,%d,%d,%d,%d,%d,", kaX, kaY, kaZ, kgX, kgY, kgZ);
   }
 
   /*
