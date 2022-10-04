@@ -35,13 +35,11 @@ void loop()
   mpu_4->getValues();
   mpu_5->getValues();
 
-  mpu_1->printData();
-  mpu_2->printData();
-  mpu_3->printData();
-  mpu_4->printData();
-  mpu_5->printData();
+  mpu_1->printRawData();
+  mpu_2->printRawData();
+  mpu_3->printRawData();
+  mpu_4->printRawData();
+  mpu_5->printRawData();
 
   mpu::endOfData();
-
-  delay(1000);
 }

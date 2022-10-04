@@ -29,14 +29,6 @@ private:
   const uint8_t MPU6050_REGISTER_ACCEL_XOUT_H = 0x3B;
   const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET = 0x68;
 
-  // The variables that will contain the sensory data.
-  int16_t AccelX;
-  int16_t AccelY;
-  int16_t AccelZ;
-  int16_t GyroX;
-  int16_t GyroY;
-  int16_t GyroZ;
-
   /*
     This method is responsible for writing to the sensor's registers in an encapsulated form.
     It does this so using the previously defined register addressis in it's parameters and by utilizing the I2C protocol.
@@ -56,7 +48,7 @@ private:
   */
   void initSensor()
   {
-    Wire.begin(scl, sda);
+    Wire.begin(sda, scl);
     delay(150); // Making sure the I2C connection has been initiated...
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_1, 0x01);
@@ -68,21 +60,6 @@ private:
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_INT_ENABLE, 0x01);
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_USER_CTRL, 0x00);
-  }
-
-  /*
-    This method sets the readable values for the public sensory data variables.
-    It basically divides the invoked raw data with the previously set measurement sensitivity.
-    (More information on the scaling factors in the MPU-6050's datasheet!)
-  */
-  void getReadableValues()
-  {
-    this->Ax = (double)AccelX / AccelScaleFactor;
-    this->Ay = (double)AccelY / AccelScaleFactor;
-    this->Az = (double)AccelZ / AccelScaleFactor;
-    this->Gx = (double)GyroX / GyroScaleFactor;
-    this->Gy = (double)GyroY / GyroScaleFactor;
-    this->Gz = (double)GyroZ / GyroScaleFactor;
   }
 
 public:
@@ -97,6 +74,14 @@ public:
   double Gx;
   double Gy;
   double Gz;
+
+  // The variables that will contain the sensory data.
+  int16_t AccelX;
+  int16_t AccelY;
+  int16_t AccelZ;
+  int16_t GyroX;
+  int16_t GyroY;
+  int16_t GyroZ;
 
   /*
     The MPU-6050's constructor that is used to initiate I2C communication for the sensor.
@@ -116,24 +101,26 @@ public:
   */
   void getValues()
   {
+    // Reading the output register to get the raw sensory data.
     Wire.beginTransmission(MPU6050SlaveAddress);
     Wire.write(MPU6050_REGISTER_ACCEL_XOUT_H);
     Wire.endTransmission();
     Wire.requestFrom(MPU6050SlaveAddress, (uint8_t)14);
 
+    // Reading the raw sensory data into the respective variables.
     AccelX = (((int16_t)Wire.read() << 8) | Wire.read());
     AccelY = (((int16_t)Wire.read() << 8) | Wire.read());
     AccelZ = (((int16_t)Wire.read() << 8) | Wire.read());
     GyroX = (((int16_t)Wire.read() << 16) | Wire.read());
     GyroY = (((int16_t)Wire.read() << 8) | Wire.read());
     GyroZ = (((int16_t)Wire.read() << 8) | Wire.read());
-
-    getReadableValues();
   }
 
   /*
     This method returns the readings as formatted comma separated values.
     It is needed so that later we can easily get the data for the model training.
+
+    (Note that right now this one is not used because of the planned Kalman filter implementation!)
   */
   void printData()
   {
