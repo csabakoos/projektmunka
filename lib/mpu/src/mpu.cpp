@@ -11,8 +11,7 @@ class mpu
 {
 private:
   // The simplified Kalman filters for our acceleration meter and gyroscope needs.
-  SimpleKalmanFilter *accelKalman;
-  SimpleKalmanFilter *gyroKalman;
+  SimpleKalmanFilter *accelKalman, *gyroKalman;
 
   // The sensor's I2C slave device address.
   const uint8_t MPU6050SlaveAddress = 0x68;
@@ -69,32 +68,16 @@ private:
 
 public:
   // Variables for the SDA and SCL pins used during the I2C communication
-  uint8_t scl;
-  uint8_t sda;
+  uint8_t scl, sda;
 
   // The variables with the readable sensory data.
-  double aX;
-  double aY;
-  double aZ;
-  double gX;
-  double gY;
-  double gZ;
+  double aX, aY, aZ, gX, gY, gZ;
 
   // The Kalman variables with the readable sensory data.
-  float kaX;
-  float kaY;
-  float kaZ;
-  float kgX;
-  float kgY;
-  float kgZ;
+  float kaX, kaY, kaZ, kgX, kgY, kgZ;
 
   // The variables that will contain the sensory data.
-  int16_t accelX;
-  int16_t accelY;
-  int16_t accelZ;
-  int16_t gyroX;
-  int16_t gyroY;
-  int16_t gyroZ;
+  int16_t accelX, accelY, accelZ, gyroX, gyroY, gyroZ;
 
   /*
     The MPU-6050's constructor that is used to initiate I2C communication for the sensor.
@@ -102,8 +85,8 @@ public:
   */
   mpu(uint8_t _scl, uint8_t _sda)
   {
-    accelKalman = new SimpleKalmanFilter(1, 1, 0.1);
-    gyroKalman = new SimpleKalmanFilter(1, 1, 0.1);
+    accelKalman = new SimpleKalmanFilter(0.01, 0.01, 0.1);
+    gyroKalman = new SimpleKalmanFilter(10, 10, 0.1);
     scl = _scl;
     sda = _sda;
     initSensor();
@@ -139,23 +122,12 @@ public:
     gZ = (double)gyroZ / gyroScaleFactor;
 
     // Setting the estimated values.
-    kaX = accelKalman->updateEstimate((float)accelX);
-    kaY = accelKalman->updateEstimate((float)accelY);
-    kaZ = accelKalman->updateEstimate((float)accelZ);
-    kgX = gyroKalman->updateEstimate((float)gyroX);
-    kgY = gyroKalman->updateEstimate((float)gyroY);
-    kgZ = gyroKalman->updateEstimate((float)gyroZ);
-  }
-
-  /*
-    This method returns the readings as formatted comma separated values.
-    It is needed so that later we can easily get the data for the model training.
-
-    (Note that right now this one is not used because of the planned Kalman filter implementation!)
-  */
-  void printScaledData()
-  {
-    Serial.printf("%d,%d,%d,%d,%d,%d,", aX, aY, aZ, gX, gY, gZ);
+    kaX = accelKalman->updateEstimate(aX);
+    kaY = accelKalman->updateEstimate(aY);
+    kaZ = accelKalman->updateEstimate(aZ);
+    kgX = gyroKalman->updateEstimate(gX);
+    kgY = gyroKalman->updateEstimate(gY);
+    kgZ = gyroKalman->updateEstimate(gZ);
   }
 
   /*
@@ -164,7 +136,34 @@ public:
   */
   void printRawData()
   {
-    Serial.printf("%d,%d,%d,%d,%d,%d,", accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+    Serial.printf("%i,%i,%i,%i,%i,%i,", accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+  }
+
+  /*
+    This method returns the readings as formatted comma separated values.
+    It is needed so that later we can easily get the data for the model training.
+  */
+  void printScaledData()
+  {
+    Serial.printf("%f,%f,%f,%f,%f,%f,", aX, aY, aZ, gX, gY, gZ);
+  }
+
+  /*
+    This method returns only the accelerometer's readings as formatted comma separated values.
+    It is needed so that later we can easily get the data for the model training.
+  */
+  void printScaledAccelData()
+  {
+    Serial.printf("%f,%f,%f,", aX, aY, aZ);
+  }
+
+  /*
+    This method returns only the gyroscope readings as formatted comma separated values.
+    It is needed so that later we can easily get the data for the model training.
+  */
+  void printScaledGyroData()
+  {
+    Serial.printf("%f,%f,%f,", gX, gY, gZ);
   }
 
   /*
@@ -174,7 +173,27 @@ public:
   */
   void printKalmanData()
   {
-    Serial.printf("%d,%d,%d,%d,%d,%d,", kaX, kaY, kaZ, kgX, kgY, kgZ);
+    Serial.printf("%f,%f,%f,%f,%f,%f,", kaX, kaY, kaZ, kgX, kgY, kgZ);
+  }
+
+  /*
+    This method prints only the measued accelerometer data run through a Kalman filter.
+    It is important since this waY we get a clear stream of sensory data that
+    can be used to group and identify exact signs for the model later or.
+  */
+  void printKalmanAccelData()
+  {
+    Serial.printf("%f,%f,%f,,", kaX, kaY, kaZ);
+  }
+
+  /*
+    This method prints only the measued gyroscope data run through a Kalman filter.
+    It is important since this waY we get a clear stream of sensory data that
+    can be used to group and identify exact signs for the model later or.
+  */
+  void printKalmanGyroData()
+  {
+    Serial.printf("%f,%f,%f,", kgX, kgY, kgZ);
   }
 
   /*

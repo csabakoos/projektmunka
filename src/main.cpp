@@ -46,9 +46,7 @@ void loop()
   */
 
   mpu_1->getValues();
-  mpu_1->printRawData();
+  mpu_1->printKalmanGyroData();
   mpu::endOfData();
-  mpu_1->printKalmanData();
-  mpu::endOfData();
-  delay(1000);
+  delay(100);
 }
