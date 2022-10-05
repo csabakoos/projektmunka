@@ -33,6 +33,9 @@ private:
   const uint8_t MPU6050_REGISTER_ACCEL_XOUT_H = 0x3B;
   const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET = 0x68;
 
+  // Constant for the gravitational acceleration multiplier.
+  const double g = 9.80665;
+
   /*
     This method is responsible for writing to the sensor's registers in an encapsulated form.
     It does this so using the previously defined register addressis in it's parameters and by utilizing the I2C protocol.
@@ -85,7 +88,7 @@ public:
   */
   mpu(uint8_t _scl, uint8_t _sda)
   {
-    accelKalman = new SimpleKalmanFilter(0.01, 0.01, 0.1);
+    accelKalman = new SimpleKalmanFilter(10, 10, 1);
     gyroKalman = new SimpleKalmanFilter(10, 10, 0.1);
     scl = _scl;
     sda = _sda;
@@ -114,9 +117,9 @@ public:
     gyroZ = (((int16_t)Wire.read() << 8) | Wire.read());
 
     // Setting the scaled sensory data based on the readings and the previously set scaler values.
-    aX = (double)accelX / accelScaleFactor;
-    aY = (double)accelY / accelScaleFactor;
-    aZ = (double)accelZ / accelScaleFactor;
+    aX = (double)accelX / accelScaleFactor * g;
+    aY = (double)accelY / accelScaleFactor * g;
+    aZ = g - ((double)accelZ / accelScaleFactor * g);
     gX = (double)gyroX / gyroScaleFactor;
     gY = (double)gyroY / gyroScaleFactor;
     gZ = (double)gyroZ / gyroScaleFactor;
@@ -183,7 +186,7 @@ public:
   */
   void printKalmanAccelData()
   {
-    Serial.printf("%f,%f,%f,,", kaX, kaY, kaZ);
+    Serial.printf("%f,%f,%f,", kaX, kaY, kaZ);
   }
 
   /*

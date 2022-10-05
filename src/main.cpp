@@ -29,24 +29,21 @@ void setup()
 
 void loop()
 {
-  /*
   mpu_1->getValues();
   mpu_2->getValues();
   mpu_3->getValues();
   mpu_4->getValues();
   mpu_5->getValues();
 
-  mpu_1->printRawData();
-  mpu_2->printRawData();
-  mpu_3->printRawData();
-  mpu_4->printRawData();
-  mpu_5->printRawData();
-
-  mpu::endOfData();
-  */
-
   mpu_1->getValues();
-  mpu_1->printKalmanGyroData();
+  mpu_1->printKalmanData();
+  mpu_2->getValues();
+  mpu_2->printKalmanData();
+  mpu_3->getValues();
+  mpu_3->printKalmanData();
+  mpu_4->getValues();
+  mpu_4->printKalmanData();
+  mpu_5->getValues();
+  mpu_5->printKalmanData();
   mpu::endOfData();
-  delay(100);
 }
