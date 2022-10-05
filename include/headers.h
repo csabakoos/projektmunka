@@ -7,7 +7,7 @@
     (In case of a mismatch no error will shown only FALSE SENSORY DATA will be recieved,
     hence the grave importance of being precise with this!)
 */
-#define SYSTEM LEFT
+#define SYSTEM RIGHT
 
 /*
     Below can be seen and changed the appropriate pins for the LEFT or RIGHT hand.
@@ -26,15 +26,15 @@
     #define MPU_5_SCL 27
     #define MPU_5_SDA 14
 #elif SYSTEM == RIGHT
-    #define MPU_1_SCL #
-    #define MPU_1_SDA #
-    #define MPU_2_SCL #
-    #define MPU_2_SDA #
-    #define MPU_3_SCL #
-    #define MPU_3_SDA #
-    #define MPU_4_SCL #
-    #define MPU_4_SDA #
-    #define MPU_5_SCL #
-    #define MPU_5_SDA #
+    #define MPU_1_SCL 27
+    #define MPU_1_SDA 14
+    #define MPU_2_SCL 25
+    #define MPU_2_SDA 26
+    #define MPU_3_SCL 32
+    #define MPU_3_SDA 33
+    #define MPU_4_SCL 21
+    #define MPU_4_SDA 19
+    #define MPU_5_SCL 17
+    #define MPU_5_SDA 16
 #endif
 
