@@ -7,7 +7,7 @@
     (In case of a mismatch no error will shown only FALSE SENSORY DATA will be recieved,
     hence the grave importance of being precise with this!)
 */
-#define SYSTEM RIGHT
+#define SYSTEM LEFT
 
 /*
     Below can be seen and changed the appropriate pins for the LEFT or RIGHT hand.
