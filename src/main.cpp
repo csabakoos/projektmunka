@@ -16,7 +16,7 @@ void setup()
   Serial.begin(115200);
   while (!Serial)
   {
-    delay(1000); // This will wait until the serial console opens.
+    delay(100); // This will wait until the serial console opens.
   }
 
   // Instantiating the previously defined MPU-6050 objects.
