@@ -55,7 +55,6 @@ private:
   */
   void initSensor()
   {
-    Wire.begin(sda, scl);
     delay(150); // Making sure the I2C connection has been initiated...
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
     writeRegister(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_1, 0x01);
@@ -92,6 +91,8 @@ public:
     gyroKalman = new SimpleKalmanFilter(10, 10, 0.1);
     scl = _scl;
     sda = _sda;
+    
+    Wire.begin(sda, scl);
     initSensor();
   }
 
