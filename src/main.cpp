@@ -42,6 +42,4 @@ void loop()
   mpu_5->printKalmanData();
 
   mpu::endOfData();
-
-  delay(1000);
 }

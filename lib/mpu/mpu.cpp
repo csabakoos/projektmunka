@@ -1,6 +1,8 @@
 #include <Arduino.h>
-#include <Wire.h>
 #include <SimpleKalmanFilter.h>
+
+#include "SlowSoftI2CMaster.h"
+#include "SlowSoftWire.h"
 
 /*
   This class represents a single MPU-6050 multi-aXis sensor.
@@ -10,6 +12,9 @@
 class mpu
 {
 private:
+  // The Software I2C's Wire representation
+  SlowSoftWire* Wire;
+
   // The simplified Kalman filters for our acceleration meter and gyroscope needs.
   SimpleKalmanFilter *accelKalman, *gyroKalman;
 
@@ -42,10 +47,10 @@ private:
   */
   void writeRegister(uint8_t deviceAddress, uint8_t regAddress, uint8_t data)
   {
-    Wire.beginTransmission(deviceAddress);
-    Wire.write(regAddress);
-    Wire.write(data);
-    Wire.endTransmission();
+    Wire->beginTransmission(deviceAddress);
+    Wire->write(regAddress);
+    Wire->write(data);
+    Wire->endTransmission();
   }
 
   /*
@@ -89,10 +94,13 @@ public:
   {
     accelKalman = new SimpleKalmanFilter(10, 10, 1);
     gyroKalman = new SimpleKalmanFilter(10, 10, 0.1);
+
     scl = _scl;
     sda = _sda;
+
+    Wire = new SlowSoftWire(sda, scl);
     
-    Wire.begin(sda, scl);
+    Wire->begin();
     initSensor();
   }
 
@@ -104,18 +112,18 @@ public:
   void getValues()
   {
     // Reading the output register to get the raw sensory data.
-    Wire.beginTransmission(MPU6050SlaveAddress);
-    Wire.write(MPU6050_REGISTER_ACCEL_XOUT_H);
-    Wire.endTransmission();
-    Wire.requestFrom(MPU6050SlaveAddress, (uint8_t)14);
+    Wire->beginTransmission(MPU6050SlaveAddress);
+    Wire->write(MPU6050_REGISTER_ACCEL_XOUT_H);
+    Wire->endTransmission();
+    Wire->requestFrom(MPU6050SlaveAddress, (uint8_t)14);
 
     // Reading the raw sensory data into the respective variables.
-    accelX = (((int16_t)Wire.read() << 8) | Wire.read());
-    accelY = (((int16_t)Wire.read() << 8) | Wire.read());
-    accelZ = (((int16_t)Wire.read() << 8) | Wire.read());
-    gyroX = (((int16_t)Wire.read() << 16) | Wire.read());
-    gyroY = (((int16_t)Wire.read() << 8) | Wire.read());
-    gyroZ = (((int16_t)Wire.read() << 8) | Wire.read());
+    accelX = (((int16_t)Wire->read() << 8) | Wire->read());
+    accelY = (((int16_t)Wire->read() << 8) | Wire->read());
+    accelZ = (((int16_t)Wire->read() << 8) | Wire->read());
+    gyroX = (((int16_t)Wire->read() << 16) | Wire->read());
+    gyroY = (((int16_t)Wire->read() << 8) | Wire->read());
+    gyroZ = (((int16_t)Wire->read() << 8) | Wire->read());
 
     // Setting the scaled sensory data based on the readings and the previously set scaler values.
     aX = (double)accelX / accelScaleFactor * g;
