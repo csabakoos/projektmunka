@@ -10,14 +10,15 @@ mpu *mpu_3;
 mpu *mpu_4;
 mpu *mpu_5;
 
-void getSensoryData(mpu* mpu_x) {
+void getSensoryData(mpu *mpu_x)
+{
   if (mpu_x->checkMotionDetection(5))
   {
     mpu_x->printKalmanData();
   }
   else
   {
-    mpu_x->printDefaultData();
+    mpu_x->printDefaultData(); // WARNING! It will possibly overload the Serial Collector!
   }
 }
 

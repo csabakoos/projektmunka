@@ -75,7 +75,7 @@ private:
 
 public:
   // This boolean variable represents the MDI (Motion Detect Interrupt) of the sensor.
-  bool mdi;
+  inline static bool mdi = false;
 
   // Variables for the SDA and SCL pins used during the I2C communication.
   uint8_t scl, sda;
@@ -189,6 +189,23 @@ public:
   void printKalmanData()
   {
     Serial.printf("%f,%f,%f,%f,%f,%f,", kaX, kaY, kaZ, kgX, kgY, kgZ);
+  }
+
+  std::string getKalmanData() {
+    std::string csv;
+    csv.append(std::to_string(kaX));
+    csv.append(",");
+    csv.append(std::to_string(kaY));
+    csv.append(",");
+    csv.append(std::to_string(kaZ));
+    csv.append(",");
+    csv.append(std::to_string(kgX));
+    csv.append(",");
+    csv.append(std::to_string(kgY));
+    csv.append(",");
+    csv.append(std::to_string(kgZ));
+    csv.append(",");
+    return csv;
   }
 
   /*
