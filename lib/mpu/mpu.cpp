@@ -13,7 +13,7 @@ class mpu
 {
 private:
   // The Software I2C's Wire representation
-  SlowSoftWire* Wire;
+  SlowSoftWire *Wire;
 
   // The simplified Kalman filters for our acceleration meter and gyroscope needs.
   SimpleKalmanFilter *accelKalman, *gyroKalman;
@@ -74,7 +74,10 @@ private:
   }
 
 public:
-  // Variables for the SDA and SCL pins used during the I2C communication
+  // This boolean variable represents the MDI (Motion Detect Interrupt) of the sensor.
+  bool mdi;
+
+  // Variables for the SDA and SCL pins used during the I2C communication.
   uint8_t scl, sda;
 
   // The variables with the readable sensory data.
@@ -99,7 +102,7 @@ public:
     sda = _sda;
 
     Wire = new SlowSoftWire(sda, scl);
-    
+
     Wire->begin();
     initSensor();
   }
@@ -209,6 +212,33 @@ public:
   }
 
   /*
+    This method is used to create the default data when no motion has been detected
+    using our version of the MDI (Motion Detect Interrupt).
+  */
+  static void printDefaultData()
+  {
+    Serial.printf("0,0,0,0,0,0,");
+  }
+
+  /*
+    This method is used to create the default acceleration data when no motion has been detected
+    using our version of the MDI (Motion Detect Interrupt).
+  */
+  static void printDefaultAccelData()
+  {
+    Serial.printf("0,0,0,");
+  }
+
+  /*
+    This method is used to create the default gyroscope data when no motion has been detected
+    using our version of the MDI (Motion Detect Interrupt).
+  */
+  static void printDefaultGyroData()
+  {
+    Serial.printf("0,0,0,");
+  }
+
+  /*
     This method represents the end of a series of sensory data collection.
     In reality all it does is to write a line break to the serial connection
     so that new data will begin in a new clean line.
@@ -219,5 +249,28 @@ public:
   static void endOfData()
   {
     Serial.println();
+  }
+
+  /*
+    This method is used to determine whether or not the glove is actually moving.
+    For this we use the gyroscope data through the Kalman filter base values to calculate movement.
+
+    Note!   This functionality could be accomlished in a different way using the built in Motion Detection interrupts
+            MDIs, but unfortunatelly the MPU6050's datasheet does not contain any documentation suggesting how to use it.
+
+    (It's pure existence is only confirmed by used the portmap of the sensor where it can be seen...)
+
+    Using this sens parameter's value can be determined the desired sensitivity threashold to ignore.
+  */
+  bool checkMotionDetection(int sens)
+  {
+    if ((abs(kgX) > sens) && (abs(kgY) > sens) && (abs(kgZ) > sens))
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
   }
 };

@@ -10,6 +10,17 @@ mpu *mpu_3;
 mpu *mpu_4;
 mpu *mpu_5;
 
+void getSensoryData(mpu* mpu_x) {
+  if (mpu_x->checkMotionDetection(5))
+  {
+    mpu_x->printKalmanData();
+  }
+  else
+  {
+    mpu_x->printDefaultData();
+  }
+}
+
 void setup()
 {
   // Initialising the serial connection.
@@ -35,11 +46,11 @@ void loop()
   mpu_4->getValues();
   mpu_5->getValues();
 
-  mpu_1->printKalmanData();
-  mpu_2->printKalmanData();
-  mpu_3->printKalmanData();
-  mpu_4->printKalmanData();
-  mpu_5->printKalmanData();
+  getSensoryData(mpu_1);
+  getSensoryData(mpu_2);
+  getSensoryData(mpu_3);
+  getSensoryData(mpu_4);
+  getSensoryData(mpu_5);
 
   mpu::endOfData();
 }
