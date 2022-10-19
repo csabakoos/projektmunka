@@ -74,6 +74,8 @@ private:
   }
 
 public:
+  inline static std::string sign = "";
+
   // This boolean variable represents the MDI (Motion Detect Interrupt) of the sensor.
   inline static bool mdi = false;
 

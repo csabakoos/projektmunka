@@ -37,6 +37,8 @@ void setup()
   mpu_3 = new mpu(MPU_3_SCL, MPU_3_SDA);
   mpu_4 = new mpu(MPU_4_SCL, MPU_4_SDA);
   mpu_5 = new mpu(MPU_5_SCL, MPU_5_SDA);
+
+  mpu::sign = "fel";
 }
 
 void loop()
@@ -46,6 +48,8 @@ void loop()
   mpu_3->getValues();
   mpu_4->getValues();
   mpu_5->getValues();
+
+  Serial.printf("%s,", mpu::sign.c_str());
 
   getSensoryData(mpu_1);
   getSensoryData(mpu_2);
