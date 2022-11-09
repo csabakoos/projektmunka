@@ -18,7 +18,7 @@ void getSensoryData(mpu *mpu_x)
   }
   else
   {
-    mpu_x->printDefaultData(); // WARNING! It will possibly overload the Serial Collector!
+    mpu_x->printDefaultData(); /* WARNING! It will possibly overload the Serial Collector! */
   }
 }
 
