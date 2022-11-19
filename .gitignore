@@ -133,3 +133,4 @@ dmypy.json
 
 # PIO specific
 .pio/
+.DS_Store
