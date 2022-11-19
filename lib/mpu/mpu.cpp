@@ -74,11 +74,6 @@ private:
   }
 
 public:
-  inline static std::string sign = "";
-
-  // This boolean variable represents the MDI (Motion Detect Interrupt) of the sensor.
-  inline static bool mdi = false;
-
   // Variables for the SDA and SCL pins used during the I2C communication.
   uint8_t scl, sda;
 
@@ -145,6 +140,18 @@ public:
     kgX = gyroKalman->updateEstimate(gX);
     kgY = gyroKalman->updateEstimate(gY);
     kgZ = gyroKalman->updateEstimate(gZ);
+  }
+
+  float getKalmanAccelX() {
+    return kaX;
+  }
+
+  float getKalmanAccelY() {
+    return kaY;
+  }
+
+  float getKalmanAccelZ() {
+    return kaZ;
   }
 
   /*
