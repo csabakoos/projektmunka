@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "headers.h"
 #include "mpu.h"
+#include "NeuralNetwork.h"
 
 // The defined MPU-6050 instances.
 mpu *mpu_1;
@@ -13,6 +14,9 @@ mpu *mpu_5;
 float buffer[15];
 float refs[15];
 long startMillis;
+
+// Neural Network for prediction
+NeuralNetwork *nn;
 
 void getSensoryData(mpu *mpu_x)
 {
@@ -154,6 +158,8 @@ void setup()
     delay(100); // This will wait until the serial console opens.
   }
 
+  nn = new NeuralNetwork();
+
   // Instantiating the previously defined MPU-6050 objects.
   mpu_1 = new mpu(MPU_1_SCL, MPU_1_SDA);
   mpu_2 = new mpu(MPU_2_SCL, MPU_2_SDA);
@@ -166,15 +172,16 @@ void setup()
   calibrateReference();
 }
 
-void loop()
-{
+void checkSection() {
   digitalWrite(2, HIGH);
   // Serial.print("Waiting for movement...");
   while (!checkMovement(5))
   { /* Nothing should happen... */
   }
   digitalWrite(2, LOW);
+}
 
+void collectSection() {
   startMillis = millis();
   while (millis() - startMillis < 5000)
   {
@@ -215,4 +222,27 @@ void loop()
   delay(125);
   digitalWrite(2, LOW);
   delay(125);
+}
+
+void predictSection() {
+  digitalWrite(2, HIGH);
+  Serial.print("___NN-PRED: ");
+
+  for (uint8_t i = 0; i < 15; i++)
+  {
+    nn->getInputBuffer()[i] = buffer[i]; // 0 for ___NN-PRED: Predicted - 0.551368
+  }
+
+  float result = nn->predict();
+
+  Serial.printf("Predicted - %f\n", result);
+  delay(1000);
+  digitalWrite(2, LOW);
+}
+
+void loop()
+{
+  checkSection();
+  collectSection();
+  predictSection();
 }
