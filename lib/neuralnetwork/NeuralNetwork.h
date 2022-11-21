@@ -28,7 +28,7 @@ private:
 public:
     float *getInputBuffer();
     NeuralNetwork();
-    float predict();
+    float *predict(int n);
 };
 
 #endif

@@ -28,6 +28,7 @@ NeuralNetwork::NeuralNetwork()
     resolver->AddReshape();
     resolver->AddQuantize();
     resolver->AddDequantize();
+    resolver->AddSoftmax();
 
     tensor_arena = (uint8_t *)malloc(kArenaSize);
     if (!tensor_arena)
@@ -61,8 +62,15 @@ float *NeuralNetwork::getInputBuffer()
     return input->data.f;
 }
 
-float NeuralNetwork::predict()
+float* NeuralNetwork::predict(int n)
 {
     interpreter->Invoke();
-    return output->data.f[0];
+    float* sums = new float[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        sums[i] = output->data.f[i] * 100;
+    }
+    
+    return sums;
 }

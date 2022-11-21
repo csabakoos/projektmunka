@@ -18,6 +18,12 @@ long startMillis;
 // Neural Network for prediction
 NeuralNetwork *nn;
 
+// Number of labes created of the training set.
+const uint8_t labels = 4;
+
+// Array storing the predictable values in training order.
+char* actions[labels]  = { "boink", "fel", "nine", "zero" };
+
 void getSensoryData(mpu *mpu_x)
 {
   if (mpu_x->checkMotionDetection(5))
@@ -230,12 +236,23 @@ void predictSection() {
 
   for (uint8_t i = 0; i < 15; i++)
   {
-    nn->getInputBuffer()[i] = buffer[i]; // 0 for ___NN-PRED: Predicted - 0.551368
+    nn->getInputBuffer()[i] = buffer[i];
   }
 
-  float result = nn->predict();
+  float* result = nn->predict(labels);
 
-  Serial.printf("Predicted - %f\n", result);
+  uint8_t index = 0;
+  for (uint8_t i = 1; i < labels; i++)
+  {
+    if(result[index] < result[i]) {
+      index = i;
+    }
+  }
+
+  char* act = actions[index];
+  float pct = result[index];
+
+  Serial.printf("Predicted - %s (%.2f %%)\n", act, pct);
   delay(1000);
   digitalWrite(2, LOW);
 }
