@@ -6,7 +6,7 @@
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"
 
-const int kArenaSize = 20000;
+const int kArenaSize = 32 * 1024;
 
 NeuralNetwork::NeuralNetwork()
 {
